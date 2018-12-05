@@ -1,0 +1,532 @@
+#%RAML 1.0
+securedBy:
+  - AppSecurity
+title: Order Management API
+description: |
+  ## Introduction
+  This REST API manages order purchases. The client can retrieve orders, create, update or cancel a specific order. The API is secured using OAuth 2.0.
+
+  To access these endpoints the client application needs an API key which is provided by the server application hosting this API. 
+
+  The API exposes the following operations: 
+  - List orders
+  - Create a new order
+  - Update a order
+  - Deletes a order
+
+  ## Authentication
+  For every API request, a valid bearer or basic token must be provided in an HTTP header:
+  - `Authorization: Bearer {bearer_token}`
+  ## Requests and Responses
+  ### Request IDs
+  Every transactions will contain the header `X-Request-Id`. The client can pass one otherwise the API Gateway will generate one for you. This header is used to track the whole request in the system.
+  ### Errors
+  The API uses standard HTTP status codes to indicate the success or failure of the API call. The body of the response will be JSON in the following format:
+  ```
+  {
+    "errorCode": "OrderNotFound",
+    "errorMessage": "Order details not found"
+    "errors" : [
+      {
+        "code" : "InvalidFormat",
+        "field" : "firstName",
+        "message" : "First name cannot have special characters"
+      },
+      {
+         "code" : "ShortValue",
+         "field" : "lastName",
+         "message" : "Lastname cannot be blank"
+      }
+    ]
+  }
+  ```
+  ### Response Status Codes
+
+    Status Code  | Description
+  ---------------|-------------
+  200 OK | The request has succeeded. The response body contains detailed information of a customer.
+  201 Created | The request has succeeded. The response contains information of the transaction as well as the `Location` header with the URL of the created resource.
+  400 Bad Request | The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+  401 Unauthorized | The request requires authentication or the authorization has been refused.
+  404 Not Found | The provided customer identifier is not valid or the status of the customer is not active.
+  500 Internal Server Error | This error usually occurs when the system is not able to fullfil the request.
+  503 Service Unavailable | The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+
+
+    Error Code  |  Message  | Description
+  --------------|-----------|-------------
+  OR10001 | Invalid Request  | The request payload is invalid.
+  OR10002 | Invalid Quantity | The quantity has to be greater than zero.
+  OR10003 | Order not found  | Order not found.
+version: 0.0.1
+(oas-info):
+  contact:
+    name: jorge.middleton@gmail.com
+annotationTypes:
+  oas-info:
+    properties:
+      termsOfService?: string
+      contact?:
+        properties:
+          name?: string
+          url?: string
+          email?: string
+      license?:
+        properties:
+          name?: string
+          url?: string
+    allowedTargets: API
+  oas-format:
+    type: string
+    allowedTargets: TypeDeclaration
+  oas-summary:
+    type: string
+    allowedTargets: Method
+  oas-body-name:
+    type: string
+    allowedTargets: TypeDeclaration
+protocols:
+  - HTTP
+  - HTTPS
+baseUri: /v1/order-management
+securitySchemes:
+  AppSecurity:
+    type: Pass Through
+    describedBy:
+      headers:
+        X-Api-Key:
+          type: string
+  OAuthSecurity:
+    type: OAuth 2.0
+    settings:
+      authorizationUri: 'https://oauth.simple.api/authorization'
+      accessTokenUri: 'https://oauth.simple.api/token'
+      authorizationGrants:
+        - authorization_code
+      scopes:
+        - user
+types:
+  OrderList:
+    type: object
+    properties:
+      orders:
+        type: array
+        items:
+          type: Order
+  Order:
+    type: object
+    properties:
+      orderId:
+        maxLength: 35
+        description: Order identifier.
+        example: '435245245'
+        type: string
+      createdDate:
+        description: Date and time when the purchase order was created.
+        example: '2018-04-15T19:20:33+10:00'
+        type: string
+        (oas-format): datetime
+      lastUpdatedDate:
+        description: Date and time when the purchase order was last updated.
+        example: '2018-04-15T19:20:33+10:00'
+        type: string
+        (oas-format): datetime
+      orderStatus:
+        description: Status of the order
+        example: PENDING
+        type: string
+        enum:
+          - DELIVERED
+          - PENDING
+          - CANCELLED
+      deliveryDate:
+        description: Delivery date.
+        example: '2017-02-22T00:00:00'
+        type: string
+        (oas-format): datetime
+      deliveryInstructions:
+        description: Instructions used by the post office.
+        type: string
+      currency:
+        description: Currency code i.e. AUD or NZD
+        example: AUD
+        type: string
+      totalBeforeTax:
+        description: Total of purchase order excluding taxes.
+        example: 100
+        type: number
+      totalTax:
+        description: Total tax on purchase order
+        example: 5.95
+        type: number
+      total:
+        description: Total of Purchase Order tax inclusive
+        example: 104.45
+        type: number
+      totalDiscount:
+        description: Total of discounts applied on the order items.
+        example: 1.5
+        type: number
+      shippingAddress:
+        type: ShippingAddress
+      items:
+        type: array
+        items:
+          type: OrderItem
+      links:
+        example:
+          - rel: customer
+            href: /customers/3
+            action: GET
+          - rel: customer
+            href: /customers/4
+            action: GET
+        type: array
+        items:
+          type: Link
+  OrderItem:
+    properties:
+      itemId:
+        description: Item identifier.
+        example: IT34234234
+        type: string
+      title:
+        description: Title of the product
+        type: string
+      imageUrl:
+        description: URL of the product's image
+        type: string
+      quantity:
+        description: The amount of items of the product.
+        type: integer
+      price:
+        description: Item price.
+        type: number
+  Customer:
+    type: object
+    properties:
+      customerId:
+        description: Customer identifier.
+        example: '341343'
+        type: string
+      firstName:
+        description: Customer first name.
+        example: Josh
+        type: string
+      lastName:
+        description: Customer surname.
+        example: Taylor
+        type: string
+      phones:
+        type: array
+        items:
+          type: Phone
+      defaultCurrency:
+        description: Default currency.
+        example: AUD
+        type: string
+  Phone:
+    type: object
+    properties:
+      phoneType:
+        description: Type of phone
+        type: string
+        enum:
+          - MOBILE
+          - HOME
+          - BUSINESS
+      number:
+        description: Phone number.
+        example: '71234567'
+        type: string
+      areaCode:
+        description: Phone area code.
+        example: '04'
+        type: string
+  ShippingAddress:
+    type: object
+    properties:
+      address:
+        description: Shipping address
+        example: U15 711 Princes Hwy
+        type: string
+      state:
+        description: State
+        example: NSW
+        type: string
+      city:
+        description: City or Suburb.
+        example: Kogarah
+        type: string
+      postCode:
+        description: Post code
+        example: 2217
+        type: integer
+  OrderResponse:
+    type: object
+    properties:
+      orderId:
+        type: string
+  Link:
+    properties:
+      rel:
+        description: Name of the related resource.
+        type: string
+      href:
+        description: URL of the resource to invoke.
+        type: string
+      action:
+        description: Method to use to invoke the href.
+        type: string
+  ApiError:
+    type: object
+    properties:
+      errorCode:
+        description: One of a server-defined set of error codes.
+        type: string
+      errorMessage:
+        description: A human-readable representation of the error.
+        type: string
+      errors:
+        type: array
+        items:
+          type: ApiErrorItem
+  ApiErrorItem:
+    type: object
+    properties:
+      code:
+        description: One of a server-defined set of error codes.
+        type: string
+      field:
+        description: Field name.
+        type: string
+      message:
+        description: A human-readable representation of the error.
+        type: string
+/orders:
+  get:
+    displayName: getOrders
+    responses:
+      '200':
+        description: Successful operation
+        body:
+          application/json:
+            type: OrderList
+            example:
+              orders:
+                - orderId: "435245245"
+                  createdDate: '2018-04-15T19:20:33+10:00'
+                  lastUpdatedDate: '2018-04-15T19:20:33+10:00'
+                  orderStatus: PENDING
+                  deliveryDate: '2017-02-22T00:00:00'
+                  deliveryInstructions: string
+                  currency: AUD
+                  totalBeforeTax: 100
+                  totalTax: 5.95
+                  total: 104.45
+                  totalDiscount: 1.5
+                  shippingAddress:
+                    address: U15 711 Princes Hwy
+                    state: NSW
+                    city: Kogarah
+                    postCode: 2217
+                  items:
+                    - itemId: IT34234234
+                      title: string
+                      imageUrl: string
+                      quantity: 0
+                      price: 0
+                  links:
+                    - rel: customer
+                      href: /customers/3
+                      action: GET
+                    - rel: customer
+                      href: /customers/4
+                      action: GET
+                - orderId: "111111111"
+                  createdDate: '2018-04-15T19:20:33+10:00'
+                  lastUpdatedDate: '2018-04-15T19:20:33+10:00'
+                  orderStatus: PENDING
+                  deliveryDate: '2017-02-22T00:00:00'
+                  deliveryInstructions: string
+                  currency: AUD
+                  totalBeforeTax: 100
+                  totalTax: 5.95
+                  total: 104.45
+                  totalDiscount: 1.5
+                  shippingAddress:
+                    address: U15 711 Princes Hwy
+                    state: NSW
+                    city: Kogarah
+                    postCode: 2217
+                  items:
+                    - itemId: IT34234234
+                      title: string
+                      imageUrl: string
+                      quantity: 0
+                      price: 0
+                  links:
+                    - rel: customer
+                      href: /customers/3
+                      action: GET
+                    - rel: customer
+                      href: /customers/4
+                      action: GET
+      '404':
+        description: Orders not found.
+        body:
+          application/json:
+            type: ApiError
+      '500':
+        description: Internal Server Error. This error usually occurs when the system is not in stable state.
+        body:
+          application/json:
+            type: ApiError
+    headers:
+      X-Correlation-ID:
+        description: |
+          An RFC4122 UUID used to reference a particular transaction.
+        required: false
+        type: string
+      If-Modified-Since:
+        description: |
+          Returns only the orders created or updated after the given date  e.g. 2015-11-12T00:00:00
+        type: string
+        required: false
+    queryParameters:
+      status:
+        description: |
+          Query parameter to retrieve orders by their status i.e. PENDING, CANCELLED or DELIVERED.
+        type: string
+        required: false
+      fields:
+        description: |
+          Comma separated list of fields to include i.e. GET /orders?fields=orderId,orderStatus,items,total
+        type: string
+        required: false
+    (oas-summary): Returns a list of orders or the authenticated user. This endpoint doesn't support pagination but it can retrieve orders by their status.
+  post:
+    description: This endpoint creates an order.
+    displayName: createOrder
+    responses:
+      '201':
+        description: Successful operation
+        headers:
+          Location:
+            description: Location of the new order i.e. /orders/23423423
+            type: string
+      '400':
+        description: Bad Request. The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+        body:
+          application/json:
+            type: ApiError
+      '404':
+        description: Customer or Item not found
+        body:
+          application/json:
+            type: ApiError
+      '500':
+        description: Internal Server Error. This error usually occurs when the system is not able to fullfil the request due to an error in the logic.
+        body:
+          application/json:
+            type: ApiError
+      '503':
+        description: Service Unavailable. The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+        body:
+          application/json:
+            type: ApiError
+    headers:
+      Content-Type:
+        description: |
+          Valid value is `application/json`. This header is required.
+        default: application/json
+        type: string
+      X-Correlation-ID:
+        description: |
+          An RFC4122 UUID used to reference a particular transaction.
+        required: false
+        type: string
+    body:
+      application/json:
+        type: Order
+        (oas-body-name): order
+    (oas-summary): Create an order.
+  '/{orderId}':
+    delete:
+      description: This endpoint allows the customer to cancel an order.
+      displayName: deleteOrder
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          description: Bad Request. The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+          body:
+            application/json:
+              type: ApiError
+        '500':
+          description: Internal Server Error. This error usually occurs when the system is not able to fullfil the request due to an error in the logic.
+          body:
+            application/json:
+              type: ApiError
+        '503':
+          description: Service Unavailable. The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+          body:
+            application/json:
+              type: ApiError
+      headers:
+        X-Correlation-ID:
+          description: |
+            An RFC4122 UUID used to reference a particular transaction.
+          type: string
+      (oas-summary): Cancel or delete an order.
+    patch:
+      description: This endpoint allows to update the details of an order.
+      displayName: updateOrder
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Location:
+              description: Location of the new order i.e. /orders/23423423
+              type: string
+        '400':
+          description: Bad Request. The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+          body:
+            application/json:
+              type: ApiError
+        '404':
+          description: Order or Customer not found
+          body:
+            application/json:
+              type: ApiError
+        '500':
+          description: Internal Server Error. This error usually occurs when the system is not able to fullfil the request due to an error in the logic.
+          body:
+            application/json:
+              type: ApiError
+        '503':
+          description: Service Unavailable. The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+          body:
+            application/json:
+              type: ApiError
+      headers:
+        Content-Type:
+          description: |
+            Valid value is `application/json`. This header is required.
+          default: application/json
+          type: string
+        X-Correlation-ID:
+          description: |
+            An RFC4122 UUID used to reference a particular transaction.
+          type: string
+      body:
+        application/json:
+          type: Order
+          (oas-body-name): order
+      (oas-summary): Partial update of an order.
+    uriParameters:
+      orderId:
+        description: |
+          Order Identifier
+        maxLength: 16
+        type: string

@@ -1,0 +1,632 @@
+swagger: '2.0'
+info:
+  description: >
+    ## Introduction
+
+    This REST API manages order purchases. The client can retrieve orders, create, update or cancel a specific order. The API is secured using OAuth 2.0.
+    
+    
+    To access these endpoints the client application needs an API key which is provided by the server application hosting this API. 
+    
+
+    The API exposes the following operations: 
+
+    - List orders
+    
+    - Create a new order
+
+    - Update a order
+
+    - Deletes a order
+
+
+    ## Authentication
+
+    For every API request, a valid bearer or basic token must be provided in an
+    HTTP header:
+
+    - `Authorization: Bearer {bearer_token}`
+
+    ## Requests and Responses
+
+    ### Request IDs
+
+    Every transactions will contain the header `X-Request-Id`. The client can
+    pass one otherwise the API Gateway will generate one for you. This header is
+    used to track the whole request in the system.
+
+    ### Errors
+
+    The API uses standard HTTP status codes to indicate the success or failure
+    of the API call. The body of the response will be JSON in the following
+    format:
+
+    ```
+
+    {
+      "errorCode": "OrderNotFound",
+      "errorMessage": "Order details not found"
+      "errors" : [
+        {
+          "code" : "InvalidFormat",
+          "field" : "firstName",
+          "message" : "First name cannot have special characters"
+        },
+        {
+           "code" : "ShortValue",
+           "field" : "lastName",
+           "message" : "Lastname cannot be blank"
+        }
+      ]
+    }
+
+    ```
+
+    ### Response Status Codes
+
+      Status Code  | Description
+    ---------------|-------------
+
+    200 OK | The request has succeeded. The response body contains detailed
+    information of a customer.
+
+    201 Created | The request has succeeded. The response contains information of the transaction as well as the `Location` header with the URL of the created resource.
+
+    400 Bad Request | The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+
+    401 Unauthorized | The request requires authentication or the authorization has been refused.
+
+    404 Not Found | The provided customer identifier is not valid or the status of the customer is not active.
+
+    500 Internal Server Error | This error usually occurs when the system is not able to fullfil the request.
+
+    503 Service Unavailable | The server is currently unable to handle the
+    request due to a temporary overloading or maintenance of the server.
+
+
+      Error Code  |  Message  | Description
+    --------------|-----------|-------------
+
+    OR10001 | Invalid Request  | The request payload is invalid.
+    
+    OR10002 | Invalid Quantity | The quantity has to be greater than zero.
+    
+    OR10003 | Order not found  | Order not found.
+
+  version: 0.0.1
+  title: Order Management API
+  contact:
+    name: jorge.middleton@gmail.com
+basePath: /v1/order-management
+schemes:
+  - http
+  - https
+paths:
+  '/orders':
+    get:
+      summary: Returns a list of orders or the authenticated user. This endpoint doesn't support pagination but it can retrieve orders by their status.
+      operationId: getOrders
+      produces:
+        - application/json
+      parameters:
+        - name: status
+          in: query
+          type: string
+          description: |
+            Query parameter to retrieve orders by their status i.e. PENDING, CANCELLED or DELIVERED.
+        - name: fields
+          in: query
+          type: string
+          description: |
+            Comma separated list of fields to include i.e. GET /orders?fields=orderId,orderStatus,items,total
+        - name: X-Correlation-ID
+          in: header
+          type: string
+          required: false
+          description: |
+            An RFC4122 UUID used to reference a particular transaction.
+        - name: If-Modified-Since
+          in: header
+          type: string
+          description: |
+            Returns only the orders created or updated after the given date  e.g. 2015-11-12T00:00:00
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/OrderList'
+          examples:
+            application/json: |-
+              {
+                "orders": [
+                  {
+                    "orderId": "435245245",
+                    "createdDate": "2018-04-15T19:20:33+10:00",
+                    "lastUpdatedDate": "2018-04-15T19:20:33+10:00",
+                    "orderStatus": "PENDING",
+                    "deliveryDate": "2017-02-22T00:00:00",
+                    "deliveryInstructions": "string",
+                    "currency": "AUD",
+                    "totalBeforeTax": 100,
+                    "totalTax": 5.95,
+                    "total": 104.45,
+                    "totalDiscount": 1.5,
+                    "shippingAddress": {
+                      "address": "U15 711 Princes Hwy",
+                      "state": "NSW",
+                      "city": "Kogarah",
+                      "postCode": 2217
+                    },
+                    "items": [
+                      {
+                        "itemId": "IT34234234",
+                        "title": "string",
+                        "imageUrl": "string",
+                        "quantity": 0,
+                        "price": 0
+                      }
+                    ],
+                    "links": [
+                      {
+                        "rel": "customer",
+                        "href": "/customers/3",
+                        "action": "GET"
+                      },
+                      {
+                        "rel": "customer",
+                        "href": "/customers/4",
+                        "action": "GET"
+                      }
+                    ]
+                  },
+                  {
+                    "orderId": "111111111",
+                    "createdDate": "2018-04-15T19:20:33+10:00",
+                    "lastUpdatedDate": "2018-04-15T19:20:33+10:00",
+                    "orderStatus": "PENDING",
+                    "deliveryDate": "2017-02-22T00:00:00",
+                    "deliveryInstructions": "string",
+                    "currency": "AUD",
+                    "totalBeforeTax": 100,
+                    "totalTax": 5.95,
+                    "total": 104.45,
+                    "totalDiscount": 1.5,
+                    "shippingAddress": {
+                      "address": "U15 711 Princes Hwy",
+                      "state": "NSW",
+                      "city": "Kogarah",
+                      "postCode": 2217
+                    },
+                    "items": [
+                      {
+                        "itemId": "IT34234234",
+                        "title": "string",
+                        "imageUrl": "string",
+                        "quantity": 0,
+                        "price": 0
+                      }
+                    ],
+                    "links": [
+                      {
+                        "rel": "customer",
+                        "href": "/customers/3",
+                        "action": "GET"
+                      },
+                      {
+                        "rel": "customer",
+                        "href": "/customers/4",
+                        "action": "GET"
+                      }
+                    ]
+                  }
+                ]
+              }
+        '404':
+          description: Orders not found.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '500':
+          description: >-
+            Internal Server Error. This error usually occurs when the system is not in stable state.
+          schema:
+            $ref: '#/definitions/ApiError'
+    post:
+      summary: Create an order.
+      description: This endpoint creates an order.
+      operationId: createOrder
+      consumes:
+        - application/json
+      parameters:
+        - name: Content-Type
+          in: header
+          type: string
+          required: true
+          default: application/json
+          description: |
+            Valid value is `application/json`. This header is required.
+        - name: X-Correlation-ID
+          in: header
+          type: string
+          required: false
+          description: |
+            An RFC4122 UUID used to reference a particular transaction.
+        - name: order
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Order'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              description: Location of the new order i.e. /orders/23423423
+        '400':
+          description: >-
+            Bad Request. The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '404':
+          description: Customer or Item not found
+          schema:
+            $ref: '#/definitions/ApiError'
+        '500':
+          description: >-
+            Internal Server Error. This error usually occurs when the system is not able to fullfil the request due to an error in the logic.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '503':
+          description: >-
+            Service Unavailable. The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+          schema:
+            $ref: '#/definitions/ApiError'
+  '/orders/{orderId}':
+    delete:
+      summary: Cancel or delete an order.
+      description: This endpoint allows the customer to cancel an order.
+      operationId: deleteOrder
+      parameters:
+        - name: orderId
+          in: path
+          description: |
+            Order Identifier.
+          type: string
+          required: true
+          maxLength: 16
+        - name: X-Correlation-ID
+          in: header
+          type: string
+          required: true
+          description: |
+            An RFC4122 UUID used to reference a particular transaction.
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          description: >-
+            Bad Request. The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '500':
+          description: >-
+            Internal Server Error. This error usually occurs when the system is not able to fullfil the request due to an error in the logic.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '503':
+          description: >-
+            Service Unavailable. The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+          schema:
+            $ref: '#/definitions/ApiError'
+    patch:
+      summary: Partial update of an order.
+      description: >-
+        This endpoint allows to update the details of an order.
+      operationId: updateOrder
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: orderId
+          in: path
+          description: |
+            Order Identifier
+          type: string
+          required: true
+          maxLength: 16
+        - name: Content-Type
+          in: header
+          type: string
+          required: true
+          default: application/json
+          description: |
+            Valid value is `application/json`. This header is required.
+        - name: X-Correlation-ID
+          in: header
+          type: string
+          required: true
+          description: |
+            An RFC4122 UUID used to reference a particular transaction.
+        - name: order
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Order'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              description: Location of the new order i.e. /orders/23423423
+        '400':
+          description: >-
+            Bad Request. The request could not be understood by the server due to malformed syntax. The message body will contain more information about the error.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '404':
+          description: Order or Customer not found
+          schema:
+            $ref: '#/definitions/ApiError'
+        '500':
+          description: >-
+            Internal Server Error. This error usually occurs when the system is not able to fullfil the request due to an error in the logic.
+          schema:
+            $ref: '#/definitions/ApiError'
+        '503':
+          description: >-
+            Service Unavailable. The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+          schema:
+            $ref: '#/definitions/ApiError'
+securityDefinitions:
+  AppSecurity:
+    type: apiKey
+    in: header
+    name: X-Api-Key
+  OAuthSecurity:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://oauth.simple.api/authorization'
+    tokenUrl: 'https://oauth.simple.api/token'
+    scopes:
+      user: User scope
+
+security:
+  - AppSecurity: [] 
+definitions:
+  OrderList:
+    type: object
+    properties:
+      orders:
+        type: array
+        items:
+          $ref: '#/definitions/Order'
+        
+  Order:
+    type: object
+    properties:
+      orderId:
+        type: string
+        maxLength: 35
+        description: >-
+          Order identifier.
+        example: "435245245"
+      createdDate:
+        type: string
+        format: datetime
+        description: >-
+          Date and time when the purchase order was created.
+        example: '2018-04-15T19:20:33+10:00'
+      lastUpdatedDate:
+        type: string
+        format: datetime
+        description: >-
+          Date and time when the purchase order was last updated.
+        example: '2018-04-15T19:20:33+10:00'
+      orderStatus:
+        type: string
+        enum:
+          - DELIVERED
+          - PENDING
+          - CANCELLED
+        description: >-
+          Status of the order
+        example: PENDING
+      deliveryDate:
+        type: string
+        format: datetime
+        description: >-
+          Delivery date.
+        example: "2017-02-22T00:00:00"
+      deliveryInstructions:
+        type: string
+        description: >-
+          Instructions used by the post office.
+      currency:
+        type: string
+        description: >-
+          Currency code i.e. AUD or NZD
+        example: AUD
+      totalBeforeTax:
+        type: number
+        description: >-
+          Total of purchase order excluding taxes.
+        example: 100
+      totalTax:
+        type: number
+        description: Total tax on purchase order
+        example: 5.95
+      total:
+        type: number
+        description: >-
+          Total of Purchase Order tax inclusive
+        example: 104.45
+      totalDiscount:
+        type: number
+        description: >-
+          Total of discounts applied on the order items.
+        example: 1.50
+      shippingAddress:
+        $ref: '#/definitions/ShippingAddress'
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/OrderItem'
+      links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+        example:
+          - rel: "customer"
+            href: "/customers/3"
+            action: "GET"
+          - rel: "customer"
+            href: "/customers/4"
+            action: "GET"
+  OrderItem:
+    properties:
+      itemId:
+        type: string
+        description: >-
+          Item identifier.
+        example: IT34234234
+      title:
+        type: string
+        description: >-
+          Title of the product
+      imageUrl:
+        type: string
+        description: URL of the product's image
+      quantity:
+        type: integer
+        description: >-
+          The amount of items of the product.
+      price:
+        type: number
+        description: >-
+          Item price.
+  Customer:
+    type: object
+    properties:
+      customerId:
+        type: string
+        description: >-
+          Customer identifier.
+        example: "341343"
+      firstName:
+        type: string
+        description: >-
+          Customer first name.
+        example: "Josh"
+      lastName:
+        type: string
+        description: >-
+          Customer surname.
+        example: "Taylor"
+      phones:
+        type: array
+        items:
+          $ref: '#/definitions/Phone'
+      defaultCurrency:
+        type: string
+        description: >-
+          Default currency.
+        example: "AUD"
+  Phone:
+    type: object
+    properties:
+      phoneType:
+        type: string
+        enum:
+          - MOBILE
+          - HOME
+          - BUSINESS
+        description: >-
+          Type of phone
+      number:
+        type: string
+        description: >-
+          Phone number.
+        example: "71234567"
+      areaCode:
+        type: string
+        description: >-
+          Phone area code.
+        example: "04"
+  ShippingAddress:
+    type: object
+    properties:
+      address:
+        type: string
+        description: >-
+          Shipping address
+        example: "U15 711 Princes Hwy"
+      state: 
+        type: string
+        description: >-
+          State
+        example: "NSW"
+      city:
+        type: string
+        description: >-
+          City or Suburb.
+        example: "Kogarah"
+      postCode:
+        type: integer
+        description: >-
+          Post code
+        example: 2217
+  OrderResponse:
+    type: object
+    properties:
+      orderId:
+        type: string
+ 
+  Link:
+    properties:
+      rel:
+        type: string
+        description: >-
+          Name of the related resource.
+      href:
+        type: string
+        description: >-
+          URL of the resource to invoke.
+      action:
+        type: string
+        description: >-
+          Method to use to invoke the href.
+
+  ApiError:
+    type: object
+    properties:
+      errorCode:
+        type: string
+        description: >-
+          One of a server-defined set of error codes.
+      errorMessage:
+        type: string
+        description: >-
+          A human-readable representation of the error.
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ApiErrorItem'
+          
+  ApiErrorItem:
+    type: object
+    properties:
+      code:
+        type: string
+        description: >-
+          One of a server-defined set of error codes.
+      field:
+        type: string
+        description: >-
+          Field name.
+      message:
+        type: string
+        description: >-
+          A human-readable representation of the error.
+  

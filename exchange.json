@@ -1,0 +1,15 @@
+{
+    "main": "order-management.raml",
+    "name": "order-management",
+    "classifier": "raml",
+    "tags": [],
+    "groupId": "07ff3e83-28cf-498d-b39d-1ce826954ab3",
+    "assetId": "order-management",
+    "version": "1.0.5",
+    "apiVersion": "0.0.1",
+    "metadata": {
+        "projectId": "6f1a9215-59c5-444f-a7e0-c0edfa4bfb41",
+        "branchId": "master",
+        "commitId": "e84cb7fbe3314ac7eb3fd3d4e7946d57dea523aa"
+    }
+}
