@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <configuration-properties file="mule-artifact.properties"/>
+    <http:listener-config doc:id="98eea93c-cddb-479a-ad98-06b3a5df8ef4" doc:name="CloudHub HTTP" doc:timestamp="1544009077392" name="cloudhub_http">
+        <http:listener-connection host="0.0.0.0" port="${http.port}"/>
+    </http:listener-config>
+    <mongo:config doc:id="bd673d1a-b622-409e-9227-bb071d928e8b" doc:name="MongoDB" doc:timestamp="1544160850708" enableMetadata="true" name="mongodb">
+        <mongo:connection-string-connection connectionString="mongodb://jmiddleton:24jorge@ds225624.mlab.com:25624/orders"/>
+    </mongo:config>
+    <flow doc:id="e99bb597-2a6a-474f-bc95-9ffd9dbf7392" doc:name="Post an Order" doc:timestamp="1544007960939" name="post_an_order">
+        <http:listener allowedMethods="POST" config-ref="cloudhub_http" doc:id="d457fe74-1158-4929-8645-229156db44c4" doc:name="Listener" doc:timestamp="1544221554113" path="/v1/order-management/orders">
+            <http:response statusCode="201">
+                <http:headers>#[%dw 2.0
+output application/java  
+---
+{
+  Location: "/v1/order-management/orders/" ++ vars.orderId as String
+}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="201">
+                <http:body>#[output application/json --- error.description]</http:body>
+                <http:headers>#[%dw 2.0
+output application/java  
+---
+{
+  Location: "/v1/order-management/orders/"
+}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <set-variable doc:id="9660e7b2-9dfb-4dd6-a42f-dcbe5098644e" doc:name="Set Variable" doc:timestamp="1544018925745" value="#[payload.links[0].href]" variableName="customerId"/>
+        <ee:transform doc:id="57d1bbb7-6367-4082-8d70-c8b3107cfec6" doc:name="Transform" doc:timestamp="1544221859387">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{ '_id' : uuid()} ++ payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <mongo:insert-document collectionName="orders" config-ref="mongodb" doc:id="a0eff915-2fed-4359-a7b2-58c6663a0fc6" doc:name="Insert Document" doc:timestamp="1544222009250" target="orderId" targetValue="#[payload]"/>
+        <set-payload doc:id="1ef3532c-941c-4dcf-b357-47a8de6c93bd" doc:name="Set Payload" doc:timestamp="1544019627441" value="#[&quot;&quot;]"/>
+    </flow>
+    <flow doc:id="66c24117-af27-4051-a5a9-1b3a7312bc38" doc:name="Get Orders" doc:timestamp="1544011796087" name="get_orders">
+        <http:listener allowedMethods="GET" config-ref="cloudhub_http" doc:id="f813d2b0-1320-4ce9-b5b7-8e8664d550fa" doc:name="Listener" doc:timestamp="1544162113961" path="/v1/order-management/orders">
+            <http:response statusCode="#[vars.statusCode]">
+                <http:body>#[output application/json --- payload]</http:body>
+                <http:headers>#[%dw 2.0
+output application/java  
+---
+{
+  ETag: vars.etag
+}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="200">
+                <http:body>#[output application/json --- error.description]</http:body>
+                <http:headers>#[%dw 2.0
+output application/java  
+---
+{}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <set-variable doc:id="df35db40-f740-46d2-ba5a-4a131ad711da" doc:name="Set Variable" doc:timestamp="1544160638242" value="#[attributes.headers.&quot;If-None-Match&quot;]" variableName="clientTag"/>
+        <set-variable doc:id="dc944af9-41b6-4b36-8338-c40d85440e09" doc:name="Set Variable" doc:timestamp="1544147861869" value="#[attributes.queryParams.fields]" variableName="fields"/>
+        <ee:transform doc:id="34c90ab9-41fa-4060-aabd-9c1787e312e8" doc:name="Transform" doc:timestamp="1544161147830">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <mongo:find-documents collectionName="orders" config-ref="mongodb" doc:id="4867ad6f-a995-4923-8f8b-021eda39c193" doc:name="Find Documents" doc:timestamp="1544049727224" returnId="false"/>
+        <set-variable doc:id="c8e54030-73f5-46bb-9b73-f4d83e56ddee" doc:name="Set Variable" doc:timestamp="1544161963772" value="#[dw::Crypto::MD5(flatten(payload.lastUpdatedDate) joinBy(&quot;,&quot;))]" variableName="etag"/>
+        <choice doc:id="1a3ed066-0e7c-4bdc-816a-13529cdb1ac6" doc:name="Choice" doc:timestamp="1544160958260">
+            <when expression="#[vars.clientTag == vars.etag]">
+                <set-variable doc:id="02108468-cf36-4fd1-b657-e79634838fb0" doc:name="Set Variable" doc:timestamp="1544161012468" value="#[&quot;304&quot;]" variableName="statusCode"/>
+                <set-payload doc:id="cda75c21-ff8e-4cfb-b681-82b26580041e" doc:name="Set Payload" doc:timestamp="1544162088833" value="#[&quot;&quot;]"/>
+            </when>
+            <otherwise>
+                <ee:transform doc:id="37afd6cc-61b1-4ffa-a318-dac91e377ed3" doc:name="Transform" doc:timestamp="1544161378815">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var fieldsReturn= if (isEmpty(vars.fields)) [] else vars.fields splitBy ","
+
+fun applyToValues(e)
+= e match {
+    case is Array -> $ map applyToValues($)
+    case is Object -> $ mapObject ((v, k) -> { 
+                   ((k): (v)) if ( (fieldsReturn contains (k) as String) or (sizeOf(fieldsReturn) == 0))
+                 })
+    else -> $
+  }
+---
+applyToValues(payload)]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+                <set-variable doc:id="f9960632-d8ae-453e-8c90-51def3dedccb" doc:name="Set Variable" doc:timestamp="1544162136941" value="#[&quot;200&quot;]" variableName="statusCode"/>
+                <set-payload doc:id="a55b7d8f-8f3f-4a2a-84b2-b9cdb6a5fb6a" doc:name="Set Payload" doc:timestamp="1544024281867" value="#[payload]"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow doc:id="1a8b4691-4b4f-4c51-bd91-8552b823a5d0" doc:name="Update an Order" doc:timestamp="1544225883581" name="update_an_order">
+        <http:listener allowedMethods="PATCH" config-ref="cloudhub_http" doc:id="b1f86b1c-41dd-4e23-be56-f7f6f78049e3" doc:name="Listener" doc:timestamp="1544227885191" path="/v1/order-management/orders/{orderId}">
+            <http:response statusCode="200"/>
+            <http:error-response statusCode="500">
+                <http:body>#[output application/json --- error.description]</http:body>
+            </http:error-response>
+        </http:listener>
+        <ee:transform doc:id="5ce77251-0501-498c-bb79-356107bc2078" doc:name="Transform" doc:timestamp="1544228677307">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload - "lastUpdatedDate" ++ (lastUpdatedDate: now() as String {format: "yyyy-MM-dd'T'HH:mm:ssZ"})]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <mongo:find-one-and-update-document collectionName="orders" config-ref="mongodb" doc:id="e1d4a2e5-0244-4e82-818f-72e6321ae5ff" doc:name="Find One And Update Document" doc:timestamp="1544230139589">
+            <mongo:find-query>#[%dw 2.0
+output application/json
+---
+{'_id': attributes.uriParams.orderId}]</mongo:find-query>
+            <mongo:content-to-update>#[payload]</mongo:content-to-update>
+        </mongo:find-one-and-update-document>
+        <set-payload doc:id="6172ee58-393c-4068-9f25-e91dbcc2b1e2" doc:name="Set Payload" doc:timestamp="1544230187966" value="#[&quot;&quot;]"/>
+    </flow>
+    <flow doc:id="149330a6-b278-4d13-b166-fa8c2a820c89" doc:name="Delete an Order" doc:timestamp="1544229274309" name="delete_an_order">
+        <http:listener allowedMethods="DELETE" config-ref="cloudhub_http" doc:id="f38aafd9-6120-49ea-8970-c4a52dcef591" doc:name="Listener" doc:timestamp="1544229939149" path="/v1/order-management/orders/{orderId}">
+            <http:response statusCode="200"/>
+            <http:error-response>
+                <http:body>#[output application/json --- error.description]</http:body>
+            </http:error-response>
+        </http:listener>
+        <ee:transform doc:id="eeba9610-216d-4739-bb20-6b5bf4424a3e" doc:name="Transform" doc:timestamp="1544229393378">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "_id": attributes.uriParams.orderId
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <mongo:remove-documents collectionName="orders" config-ref="mongodb" doc:id="ad5290c1-9747-4c7e-a3a2-9b7f2e185b8f" doc:name="Remove Documents" doc:timestamp="1544229348284"/>
+        <set-payload doc:id="1563d327-3d0e-416f-8a4a-452e38806e8c" doc:name="Set Payload" doc:timestamp="1544229758186" value="#[&quot;&quot;]"/>
+    </flow>
+</mule>

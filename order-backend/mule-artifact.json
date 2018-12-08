@@ -1,0 +1,19 @@
+{
+  "configs": [
+    "mule-config.xml"
+  ],
+  "redeploymentEnabled": true,
+  "name": "order-backend",
+  "minMuleVersion": "4.1.3",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedResources": []
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}

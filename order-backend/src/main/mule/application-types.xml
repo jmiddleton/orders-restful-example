@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="etag" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#8f074c1f-8af6-46c9-9180-6b37970d1afb">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#4bab2d86-7f7f-4cb6-bd94-5aa8b9768740">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#b93598e8-3eb8-4c42-a4c9-4fbef884b71d">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#897317b4-751c-4ed8-8df9-d74fb943a3ad">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#68ce109c-0743-4c13-921e-28e560afc22d">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#7a20b670-739a-4176-a2dd-8f8eeb097831">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#4ef2f53a-9e76-4900-a106-1874fddb4bc5">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#57d1bbb7-6367-4082-8d70-c8b3107cfec6">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#34c90ab9-41fa-4060-aabd-9c1787e312e8">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#37afd6cc-61b1-4ffa-a318-dac91e377ed3">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#f024c606-ec85-40c4-a5ad-469aa0143f0e">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="etag"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#5c337383-2e3b-4e8a-b836-e881dfadf24e">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#5ce77251-0501-498c-bb79-356107bc2078">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#e1d4a2e5-0244-4e82-818f-72e6321ae5ff">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#eeba9610-216d-4739-bb20-6b5bf4424a3e">
+    <types:processor-declaration/>
+  </types:enrichment>
+</types:mule>

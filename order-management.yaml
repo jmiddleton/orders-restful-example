@@ -13,11 +13,11 @@ info:
 
     - List orders
     
-    - Create a new order
+    - Create an order
 
-    - Update a order
+    - Update an order
 
-    - Deletes a order
+    - Deletes an order
 
 
     ## Authentication
@@ -125,16 +125,21 @@ paths:
           required: false
           description: |
             An RFC4122 UUID used to reference a particular transaction.
-        - name: If-Modified-Since
+        - name: If-None-Match
           in: header
           type: string
           description: |
-            Returns only the orders created or updated after the given date  e.g. 2015-11-12T00:00:00
+            Returns the requested resources only if the value passed here doesn't match any ETag. If the value matches an ETag, 304 (Not Modified) is returned.
       responses:
         '200':
           description: Successful operation
           schema:
             $ref: '#/definitions/OrderList'
+          headers:
+            ETag:
+              type: string
+              description: |
+                Identify a specific version of the response. ETag is used by the client application when requesting new orders. If the server side has the same ETag, 304 (Not Modified) will be returned.
           examples:
             application/json: |-
               {
@@ -402,7 +407,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Order'
-        
   Order:
     type: object
     properties:

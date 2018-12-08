@@ -10,9 +10,9 @@ description: |
 
   The API exposes the following operations: 
   - List orders
-  - Create a new order
-  - Update a order
-  - Deletes a order
+  - Create an order
+  - Update an order
+  - Deletes an order
 
   ## Authentication
   For every API request, a valid bearer or basic token must be provided in an HTTP header:
@@ -309,12 +309,17 @@ types:
     responses:
       '200':
         description: Successful operation
+        headers:
+          ETag:
+            description: |
+              Identify a specific version of the response. ETag is used by the client application when requesting new orders. If the server side has the same ETag, 304 (Not Modified) will be returned.
+            type: string
         body:
           application/json:
             type: OrderList
             example:
               orders:
-                - orderId: "435245245"
+                - orderId: '435245245'
                   createdDate: '2018-04-15T19:20:33+10:00'
                   lastUpdatedDate: '2018-04-15T19:20:33+10:00'
                   orderStatus: PENDING
@@ -343,7 +348,7 @@ types:
                     - rel: customer
                       href: /customers/4
                       action: GET
-                - orderId: "111111111"
+                - orderId: '111111111'
                   createdDate: '2018-04-15T19:20:33+10:00'
                   lastUpdatedDate: '2018-04-15T19:20:33+10:00'
                   orderStatus: PENDING
@@ -388,9 +393,9 @@ types:
           An RFC4122 UUID used to reference a particular transaction.
         required: false
         type: string
-      If-Modified-Since:
+      If-None-Match:
         description: |
-          Returns only the orders created or updated after the given date  e.g. 2015-11-12T00:00:00
+          Returns the requested resources only if the value passed here doesn't match any ETag. If the value matches an ETag, 304 (Not Modified) is returned.
         type: string
         required: false
     queryParameters:
