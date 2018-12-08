@@ -1,0 +1,236 @@
+{
+	"info": {
+		"_postman_id": "c9e61d66-ff99-162a-354c-a0196898238c",
+		"name": "Orders-Management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Orders - Full",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "adfadf"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://order-backend-jipu.us-e2.cloudhub.io/v1/order-management/orders",
+					"protocol": "http",
+					"host": [
+						"order-backend-jipu",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"v1",
+						"order-management",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Orders - ETag",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "adfadf"
+					},
+					{
+						"key": "If-None-Match",
+						"type": "text",
+						"value": "ca0637efc87c698b7475edda55659e16"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://order-backend-jipu.us-e2.cloudhub.io/v1/order-management/orders",
+					"protocol": "http",
+					"host": [
+						"order-backend-jipu",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"v1",
+						"order-management",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Orders - Mobile",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "adfadf"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://order-backend-jipu.us-e2.cloudhub.io/v1/order-management/orders?fields=orderId,createdDate,orderStatus,lastUpdatedDate",
+					"protocol": "http",
+					"host": [
+						"order-backend-jipu",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"v1",
+						"order-management",
+						"orders"
+					],
+					"query": [
+						{
+							"key": "fields",
+							"value": "orderId,createdDate,orderStatus,lastUpdatedDate"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "adfadf"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"createdDate\": \"2016-11-12T19:20:33+10:00\",\n    \"lastUpdatedDate\": \"2018-11-12T19:20:33+10:00\",\n    \"orderStatus\": \"DELIVERED\",\n    \"deliveryDate\": \"2018-11-08T00:00:00\",\n    \"deliveryInstructions\": \"ring before\",\n    \"currency\": \"AUD\",\n    \"totalBeforeTax\": 100,\n    \"totalTax\": 5.95,\n    \"total\": 104.45,\n    \"totalDiscount\": 1.5,\n    \"shippingAddress\": {\n        \"address\": \"U15 711 Princes Hwy\",\n        \"state\": \"NSW\",\n        \"city\": \"Kogarah\",\n        \"postCode\": 2217\n    },\n    \"items\": [\n        {\n            \"itemId\": \"45245afadf\",\n            \"title\": \"Macbook Pro\",\n            \"imageUrl\": \"http://apple.com.au/macpro10x.png\",\n            \"quantity\": 1,\n            \"price\": 1230\n        }\n    ],\n    \"links\": [\n        {\n            \"rel\": \"customer\",\n            \"href\": \"/customers/4\",\n            \"action\": \"GET\"\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "http://order-backend-jipu.us-e2.cloudhub.io/v1/order-management/orders",
+					"protocol": "http",
+					"host": [
+						"order-backend-jipu",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"v1",
+						"order-management",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Order",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "adfadf"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "x-correlation-id",
+						"value": "452452345",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"orderStatus\": \"IN_PROGRESS\",\n  \"items\": [\n    {\n      \"itemId\": \"AV23234234\",\n      \"title\": \"The Wiggle shirt size L\",\n      \"imageUrl\": \"http://www.target.com.au/wiggle-shirt-l-01.png\",\n      \"quantity\": \"1\",\n      \"price\": \"10.45\"\n    },\n    {\n            \"itemId\": \"45245afadf\",\n            \"title\": \"Macbook Pro\",\n            \"imageUrl\": \"http://apple.com.au/macpro10x.png\",\n            \"quantity\": 1,\n            \"price\": 1230\n        }\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://order-backend-jipu.us-e2.cloudhub.io/v1/order-management/orders/3db04ddc-e1da-47ba-a506-9fb3fd9f8809",
+					"protocol": "http",
+					"host": [
+						"order-backend-jipu",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"v1",
+						"order-management",
+						"orders",
+						"3db04ddc-e1da-47ba-a506-9fb3fd9f8809"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Order",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "adfadf"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "x-correlation-id",
+						"type": "text",
+						"value": "452452345"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://order-backend-jipu.us-e2.cloudhub.io/v1/order-management/orders/22ac32fc-0496-4654-9db7-264e2ae0b9d1",
+					"protocol": "http",
+					"host": [
+						"order-backend-jipu",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"v1",
+						"order-management",
+						"orders",
+						"22ac32fc-0496-4654-9db7-264e2ae0b9d1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
