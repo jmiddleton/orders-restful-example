@@ -23,6 +23,8 @@ The following methods are allowed:
 - PUT     /v1/order-management/orders/{orderId}: update an order.
 - DELETE  /v1/order-management/orders/{orderId}: delete an order.
 
+The application uses MongoDB to store/retrieve/update/delete orders. The database is hosted on [mLab](https://mlab.com/).
+
 ### Example Use Case 
 
 In this example, the API allows clients to access order information using different optimizations based on the client type and requirement. If the client is a mobile application, then filtering can be applied on the response payload to return only certain attributes and not the full content. On the other hand, full response content can be retrieved for third party or internal applicaitons who need to more details.
